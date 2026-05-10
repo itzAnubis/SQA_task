@@ -97,3 +97,23 @@ class TestTransferMoney:
 
         _, sender_bal = bank.get_balance("ahmed")
         assert sender_bal == 0.0
+
+    def test_transfer_extreme_decimal(self, bank):
+        """TC-49: Transfer amount with many decimal places."""
+        to_acc = _get_account_num(bank, "sara")
+        # Floating point arithmetic check
+        success, msg = bank.transfer("ahmed", to_acc, 0.00000001)
+        assert success is True
+        
+        _, sender_bal = bank.get_balance("ahmed")
+        assert sender_bal == 999.99999999
+
+    def test_transfer_after_zero_balance(self, bank):
+        """TC-50: Try to transfer after balance reaches zero."""
+        to_acc = _get_account_num(bank, "sara")
+        bank.transfer("ahmed", to_acc, 1000.0)
+        
+        # Ahmed balance is now 0
+        success, msg = bank.transfer("ahmed", to_acc, 1.0)
+        assert success is False
+        assert "Insufficient" in msg

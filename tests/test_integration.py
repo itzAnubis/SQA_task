@@ -96,3 +96,51 @@ class TestIntegration:
         success, msg = bank.transfer("ghost", sara_acc, 100.0)
         assert success is False
         assert "not found" in msg.lower()
+
+    def test_three_way_transfer(self, bank):
+        """TC-45: 3-way transfer (A -> B -> C)."""
+        bank.register_user("ahmed", "Ahmed123!")
+        bank.register_user("sara", "Sara5678!")
+        bank.register_user("khaled", "Khaled999!")
+
+        sara_acc = bank.get_user("sara").account_number
+        khaled_acc = bank.get_user("khaled").account_number
+
+        # Ahmed sends 500 to Sara
+        success1, _ = bank.transfer("ahmed", sara_acc, 500.0)
+        assert success1 is True
+
+        # Sara sends 300 to Khaled
+        success2, _ = bank.transfer("sara", khaled_acc, 300.0)
+        assert success2 is True
+
+        _, ahmed_bal = bank.get_balance("ahmed")
+        _, sara_bal = bank.get_balance("sara")
+        _, khaled_bal = bank.get_balance("khaled")
+
+        assert ahmed_bal == 500.0   # 1000 - 500
+        assert sara_bal == 1200.0   # 1000 + 500 - 300
+        assert khaled_bal == 1300.0 # 1000 + 300
+
+    def test_circular_transfer(self, bank):
+        """TC-46: Circular transfer (A -> B -> C -> A)."""
+        bank.register_user("ahmed", "Ahmed123!")
+        bank.register_user("sara", "Sara5678!")
+        bank.register_user("khaled", "Khaled999!")
+
+        ahmed_acc = bank.get_user("ahmed").account_number
+        sara_acc = bank.get_user("sara").account_number
+        khaled_acc = bank.get_user("khaled").account_number
+
+        bank.transfer("ahmed", sara_acc, 100.0)
+        bank.transfer("sara", khaled_acc, 100.0)
+        bank.transfer("khaled", ahmed_acc, 100.0)
+
+        _, ahmed_bal = bank.get_balance("ahmed")
+        _, sara_bal = bank.get_balance("sara")
+        _, khaled_bal = bank.get_balance("khaled")
+
+        # Balances should be unchanged
+        assert ahmed_bal == 1000.0
+        assert sara_bal == 1000.0
+        assert khaled_bal == 1000.0

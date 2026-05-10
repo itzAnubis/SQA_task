@@ -91,3 +91,15 @@ class TestChangePassword:
         success, msg = bank.change_password("ahmed", "Ahmed123!", "Ahmed123!")
         assert success is False
         assert "different" in msg.lower()
+
+    def test_login_case_sensitive_password(self, bank):
+        """TC-47: Password should be case sensitive."""
+        success, msg = bank.login("ahmed", "ahmed123!")
+        assert success is False
+        assert "Invalid" in msg
+
+    def test_login_case_sensitive_username(self, bank):
+        """TC-48: Username should be case sensitive (if applicable) or test different casing."""
+        success, msg = bank.login("Ahmed", "Ahmed123!")
+        assert success is False
+        assert "Invalid" in msg

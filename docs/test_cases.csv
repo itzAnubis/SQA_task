@@ -31,3 +31,21 @@ TC-29,Integration,Login-change password-login again,Change pw then re-login,"Old
 TC-30,Integration,Multiple transfers verify balances,3 transfers back and forth,"ahmed=600, sara=1400","ahmed=600.0, sara=1400.0",Pass
 TC-31,Integration,Register duplicate username,Register ahmed twice,Failure - already exists,"Failure, ""Username already exists""",Pass
 TC-32,Integration,Transfer from non-existent user,"from=""ghost""",Failure - not found,"Failure, ""Sender user not found""",Pass
+TC-33,UI/API,Register via API,"username=""ahmed"", password=""Ahmed123!""",Success with account number,"Success, ACC1001",Pass
+TC-34,UI/API,Register duplicate username via API,"username=""ahmed"" (twice)",Failure - already exists,"Failure, ""Username already exists""",Pass
+TC-35,UI/API,Login via API,"username=""ahmed"", password=""Ahmed123!""",Success - welcome message,"Success, ""Welcome, ahmed!""",Pass
+TC-36,UI/API,Login wrong password via API,"username=""ahmed"", password=""WrongPass1""",Failure - invalid,"Failure, ""Invalid username or password""",Pass
+TC-37,UI/API,Get balance via API after login,"GET /api/balance","Success, balance=1000.0","Success, 1000.0",Pass
+TC-38,UI/API,Transfer via API,"to=""ACC1002"", amount=200.0",Success,"Success, ""Transfer successful""",Pass
+TC-39,UI/API,Transfer insufficient funds via API,"amount=5000.0",Failure - insufficient,"Failure, ""Insufficient funds""",Pass
+TC-40,UI/API,Get transaction history via API,GET /api/history,1 transaction entry,"1 entry, amount=150.0",Pass
+TC-41,UI/API,Change password via API,"old=""Ahmed123!"", new=""NewPass99!""",Success,"Success, ""Password changed""",Pass
+TC-42,UI/API,Logout clears session,POST /api/logout then GET /api/balance,"Logout success, balance returns 401","Success, then 401 unauthorized",Pass
+TC-43,UI/API,Balance without login,GET /api/balance (no session),401 unauthorized,"401, ""Not logged in""",Pass
+TC-44,UI/API,Register weak password via API,"password=""weak""",Failure - too short,"Failure, ""must be at least 8 characters""",Pass
+TC-45,Integration,3-way transfer A->B->C,"ahmed sends 500 to sara, sara sends 300 to khaled","ahmed=500, sara=1200, khaled=1300","ahmed=500, sara=1200, khaled=1300",Pass
+TC-46,Integration,Circular transfer A->B->C->A,"each sends 100 in circle",Balances unchanged at 1000,Balances unchanged at 1000,Pass
+TC-47,Authentication,Case sensitive password,"ahmed, ahmed123!",Failure - invalid credentials,Failure,Pass
+TC-48,Authentication,Case sensitive username,"Ahmed, Ahmed123!",Failure - invalid credentials,Failure,Pass
+TC-49,Account,Extreme decimal transfer,"ahmed sends 0.00000001 to sara",Success - balance is 999.99999999,"Success, 999.99999999",Pass
+TC-50,Account,Transfer out after balance is 0,"ahmed sends 1000 then 1",Failure - insufficient funds,Failure,Pass

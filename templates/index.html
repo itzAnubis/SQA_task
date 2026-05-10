@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Simple Banking System - Secure online banking with transfers, balance checking, and transaction history.">
+    <title>Simple Banking System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --bg-primary: #0a0e1a;
+            --bg-secondary: #111827;
+            --bg-card: rgba(17, 24, 39, 0.7);
+            --bg-glass: rgba(255, 255, 255, 0.04);
+            --border-glass: rgba(255, 255, 255, 0.08);
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --accent: #6366f1;
+            --accent-light: #818cf8;
+            --accent-glow: rgba(99, 102, 241, 0.3);
+            --success: #22c55e;
+            --success-bg: rgba(34, 197, 94, 0.1);
+            --error: #ef4444;
+            --error-bg: rgba(239, 68, 68, 0.1);
+            --warning: #f59e0b;
+            --radius: 16px;
+            --radius-sm: 10px;
+            --shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            background: radial-gradient(ellipse at 20% 50%, rgba(99, 102, 241, 0.08) 0%, transparent 50%),
+                        radial-gradient(ellipse at 80% 20%, rgba(139, 92, 246, 0.06) 0%, transparent 50%),
+                        radial-gradient(ellipse at 50% 80%, rgba(59, 130, 246, 0.05) 0%, transparent 50%);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* ===== AUTH SCREENS ===== */
+        .auth-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+        }
+        .auth-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius);
+            padding: 48px 40px;
+            width: 100%;
+            max-width: 440px;
+            box-shadow: var(--shadow);
+            animation: slideUp 0.5s ease-out;
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .auth-card .logo {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+        .auth-card .logo h1 {
+            font-size: 28px;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--accent-light), #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.5px;
+        }
+        .auth-card .logo p {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-top: 6px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 14px 16px;
+            background: var(--bg-glass);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius-sm);
+            color: var(--text-primary);
+            font-size: 15px;
+            font-family: inherit;
+            transition: var(--transition);
+            outline: none;
+        }
+        .form-group input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+        .form-group input::placeholder {
+            color: var(--text-muted);
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 14px 28px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-family: inherit;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+            width: 100%;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent), #7c3aed);
+            color: white;
+            box-shadow: 0 4px 16px var(--accent-glow);
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 24px var(--accent-glow);
+        }
+        .btn-primary:active { transform: translateY(0); }
+        .btn-secondary {
+            background: var(--bg-glass);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-glass);
+        }
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.08);
+            color: var(--text-primary);
+        }
+        .btn-danger {
+            background: var(--error-bg);
+            color: var(--error);
+            border: 1px solid rgba(239,68,68,0.2);
+        }
+        .btn-danger:hover { background: rgba(239,68,68,0.2); }
+        .auth-switch {
+            text-align: center;
+            margin-top: 24px;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+        .auth-switch a {
+            color: var(--accent-light);
+            text-decoration: none;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .auth-switch a:hover { text-decoration: underline; }
+        .msg {
+            padding: 12px 16px;
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            margin-bottom: 16px;
+            display: none;
+            animation: fadeIn 0.3s;
+        }
+        .msg.error { display: block; background: var(--error-bg); color: var(--error); border: 1px solid rgba(239,68,68,0.2); }
+        .msg.success { display: block; background: var(--success-bg); color: var(--success); border: 1px solid rgba(34,197,94,0.2); }
+
+        /* ===== DASHBOARD ===== */
+        .dashboard { display: none; position: relative; z-index: 1; min-height: 100vh; }
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 32px;
+            background: rgba(17, 24, 39, 0.8);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border-glass);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .topbar-brand {
+            font-size: 20px;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--accent-light), #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .topbar-user {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+        .topbar-user strong { color: var(--text-primary); }
+        .topbar .btn { width: auto; padding: 10px 20px; font-size: 13px; }
+
+        .dash-content {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 32px 24px;
+        }
+        .dash-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+        .card {
+            background: var(--bg-card);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius);
+            padding: 28px;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+        .card:hover { border-color: rgba(255,255,255,0.12); transform: translateY(-2px); }
+        .card-title {
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+        }
+        .balance-amount {
+            font-size: 42px;
+            font-weight: 800;
+            letter-spacing: -1px;
+            background: linear-gradient(135deg, #22c55e, #4ade80);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .balance-label {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+        .account-num {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-top: 12px;
+            font-family: 'Courier New', monospace;
+            background: var(--bg-glass);
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 6px;
+        }
+
+        /* Transfer form */
+        .transfer-form .form-group { margin-bottom: 16px; }
+        .transfer-form .form-group input { padding: 12px 14px; font-size: 14px; }
+        .transfer-form .btn { margin-top: 4px; }
+        .card.full-width { grid-column: 1 / -1; }
+
+        /* History table */
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        .history-table th {
+            text-align: left;
+            padding: 12px 16px;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border-glass);
+            font-weight: 600;
+        }
+        .history-table td {
+            padding: 14px 16px;
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+            color: var(--text-secondary);
+        }
+        .history-table tr { transition: var(--transition); }
+        .history-table tbody tr:hover { background: var(--bg-glass); }
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .badge-sent { background: var(--error-bg); color: var(--error); }
+        .badge-received { background: var(--success-bg); color: var(--success); }
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-muted);
+        }
+        .empty-state .icon { font-size: 48px; margin-bottom: 12px; }
+
+        /* Password modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(8px);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius);
+            padding: 36px 32px;
+            max-width: 440px;
+            width: 100%;
+            animation: slideUp 0.3s ease-out;
+        }
+        .modal h2 {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 24px;
+        }
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+        }
+        .modal-actions .btn { flex: 1; }
+
+        /* Responsive */
+        @media (max-width: 640px) {
+            .dash-grid { grid-template-columns: 1fr; }
+            .topbar { padding: 14px 16px; }
+            .dash-content { padding: 20px 16px; }
+            .auth-card { padding: 32px 24px; }
+            .balance-amount { font-size: 32px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ====== AUTH: LOGIN ====== -->
+<div id="auth-login" class="auth-wrapper">
+    <div class="auth-card">
+        <div class="logo">
+            <h1>🏦 SimpleBank</h1>
+            <p>Secure banking at your fingertips</p>
+        </div>
+        <div id="login-msg" class="msg"></div>
+        <form id="login-form" onsubmit="return handleLogin(event)">
+            <div class="form-group">
+                <label for="login-username">Username</label>
+                <input type="text" id="login-username" placeholder="Enter your username" autocomplete="username" required>
+            </div>
+            <div class="form-group">
+                <label for="login-password">Password</label>
+                <input type="password" id="login-password" placeholder="Enter your password" autocomplete="current-password" required>
+            </div>
+            <button type="submit" id="login-btn" class="btn btn-primary">Sign In</button>
+        </form>
+        <div class="auth-switch">
+            Don't have an account? <a onclick="showScreen('auth-register')">Register</a>
+            <br><br>
+            <div style="font-size: 12px; color: var(--text-muted); text-align: left; background: var(--bg-glass); padding: 10px; border-radius: 8px;">
+                <strong>Test Accounts (Click to copy):</strong><br>
+                User: <code style="cursor:pointer;" onclick="navigator.clipboard.writeText('ahmed')">ahmed</code> | Pass: <code style="cursor:pointer;" onclick="navigator.clipboard.writeText('Ahmed123!')">Ahmed123!</code> | Acc: ACC1001<br>
+                User: <code style="cursor:pointer;" onclick="navigator.clipboard.writeText('sara')">sara</code> | Pass: <code style="cursor:pointer;" onclick="navigator.clipboard.writeText('Sara5678!')">Sara5678!</code> | Acc: ACC1002<br>
+                User: <code style="cursor:pointer;" onclick="navigator.clipboard.writeText('khaled')">khaled</code> | Pass: <code style="cursor:pointer;" onclick="navigator.clipboard.writeText('Khaled999!')">Khaled999!</code> | Acc: ACC1003
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ====== AUTH: REGISTER ====== -->
+<div id="auth-register" class="auth-wrapper" style="display:none">
+    <div class="auth-card">
+        <div class="logo">
+            <h1>🏦 SimpleBank</h1>
+            <p>Create your free account</p>
+        </div>
+        <div id="register-msg" class="msg"></div>
+        <form id="register-form" onsubmit="return handleRegister(event)">
+            <div class="form-group">
+                <label for="register-username">Username</label>
+                <input type="text" id="register-username" placeholder="Choose a username" autocomplete="username" required>
+            </div>
+            <div class="form-group">
+                <label for="register-password">Password</label>
+                <input type="password" id="register-password" placeholder="Min 8 chars, 1 uppercase, 1 digit" autocomplete="new-password" required>
+            </div>
+            <button type="submit" id="register-btn" class="btn btn-primary">Create Account</button>
+        </form>
+        <div class="auth-switch">
+            Already have an account? <a onclick="showScreen('auth-login')">Sign In</a>
+        </div>
+    </div>
+</div>
+
+<!-- ====== DASHBOARD ====== -->
+<div id="dashboard" class="dashboard">
+    <div class="topbar">
+        <div class="topbar-brand">🏦 SimpleBank</div>
+        <div class="topbar-right">
+            <div class="topbar-user">Welcome, <strong id="dash-username"></strong></div>
+            <button class="btn btn-secondary" onclick="openPasswordModal()">🔒 Password</button>
+            <button class="btn btn-danger" onclick="handleLogout()">Logout</button>
+        </div>
+    </div>
+    <div class="dash-content">
+        <div id="dash-msg" class="msg" style="margin-bottom:24px"></div>
+        <div class="dash-grid">
+            <!-- Balance Card -->
+            <div class="card" id="balance-card">
+                <div class="card-title">💰 Account Balance</div>
+                <div class="balance-amount" id="balance-value">$0.00</div>
+                <div class="balance-label">Available Balance</div>
+                <div class="account-num" id="account-number">ACC----</div>
+            </div>
+
+            <!-- Transfer Card -->
+            <div class="card">
+                <div class="card-title">📤 Send Money</div>
+                <form class="transfer-form" onsubmit="return handleTransfer(event)">
+                    <div class="form-group">
+                        <label for="transfer-to">Recipient Account</label>
+                        <input type="text" id="transfer-to" placeholder="e.g. ACC1002" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="transfer-amount">Amount ($)</label>
+                        <input type="number" id="transfer-amount" placeholder="0.00" step="0.01" min="0.01" required>
+                    </div>
+                    <button type="submit" id="transfer-btn" class="btn btn-primary">Send Transfer</button>
+                </form>
+            </div>
+
+            <!-- History Card -->
+            <div class="card full-width" id="history-card">
+                <div class="card-title">📋 Transaction History</div>
+                <div id="history-content">
+                    <div class="empty-state">
+                        <div class="icon">📭</div>
+                        <p>No transactions yet</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ====== CHANGE PASSWORD MODAL ====== -->
+<div id="password-modal" class="modal-overlay">
+    <div class="modal">
+        <h2>🔒 Change Password</h2>
+        <div id="password-msg" class="msg"></div>
+        <form onsubmit="return handleChangePassword(event)">
+            <div class="form-group">
+                <label for="old-password">Current Password</label>
+                <input type="password" id="old-password" placeholder="Enter current password" required>
+            </div>
+            <div class="form-group">
+                <label for="new-password">New Password</label>
+                <input type="password" id="new-password" placeholder="Min 8 chars, 1 uppercase, 1 digit" required>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" onclick="closePasswordModal()">Cancel</button>
+                <button type="submit" id="change-pw-btn" class="btn btn-primary">Update</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    /* ====== STATE ====== */
+    let currentUser = null;
+    let currentAccount = null;
+
+    /* ====== NAVIGATION ====== */
+    function showScreen(id) {
+        document.querySelectorAll('.auth-wrapper, .dashboard').forEach(el => el.style.display = 'none');
+        const el = document.getElementById(id);
+        if (el) {
+            el.style.display = id === 'dashboard' ? 'block' : 'flex';
+        }
+        // Clear messages
+        document.querySelectorAll('.msg').forEach(m => { m.className = 'msg'; m.textContent = ''; });
+    }
+
+    function showMsg(elementId, text, type) {
+        const el = document.getElementById(elementId);
+        el.textContent = text;
+        el.className = 'msg ' + type;
+    }
+
+    /* ====== API HELPERS ====== */
+    async function api(url, options = {}) {
+        const resp = await fetch(url, {
+            headers: { 'Content-Type': 'application/json' },
+            ...options
+        });
+        return resp.json();
+    }
+
+    /* ====== AUTH HANDLERS ====== */
+    async function handleLogin(e) {
+        e.preventDefault();
+        const username = document.getElementById('login-username').value.trim();
+        const password = document.getElementById('login-password').value;
+
+        const data = await api('/api/login', {
+            method: 'POST',
+            body: JSON.stringify({ username, password })
+        });
+
+        if (data.success) {
+            currentUser = username;
+            currentAccount = data.account_number;
+            enterDashboard();
+        } else {
+            showMsg('login-msg', data.message, 'error');
+        }
+        return false;
+    }
+
+    async function handleRegister(e) {
+        e.preventDefault();
+        const username = document.getElementById('register-username').value.trim();
+        const password = document.getElementById('register-password').value;
+
+        const data = await api('/api/register', {
+            method: 'POST',
+            body: JSON.stringify({ username, password })
+        });
+
+        if (data.success) {
+            currentUser = username;
+            currentAccount = data.account_number;
+            enterDashboard();
+        } else {
+            showMsg('register-msg', data.message, 'error');
+        }
+        return false;
+    }
+
+    async function handleLogout() {
+        await api('/api/logout', { method: 'POST' });
+        currentUser = null;
+        currentAccount = null;
+        document.getElementById('login-form').reset();
+        document.getElementById('register-form').reset();
+        showScreen('auth-login');
+    }
+
+    /* ====== DASHBOARD ====== */
+    function enterDashboard() {
+        document.getElementById('dash-username').textContent = currentUser;
+        document.getElementById('account-number').textContent = currentAccount;
+        showScreen('dashboard');
+        refreshBalance();
+        refreshHistory();
+    }
+
+    async function refreshBalance() {
+        const data = await api('/api/balance');
+        if (data.success) {
+            document.getElementById('balance-value').textContent = '$' + data.balance.toFixed(2);
+        }
+    }
+
+    async function refreshHistory() {
+        const data = await api('/api/history');
+        const container = document.getElementById('history-content');
+
+        if (!data.success || data.transactions.length === 0) {
+            container.innerHTML = '<div class="empty-state"><div class="icon">📭</div><p>No transactions yet</p></div>';
+            return;
+        }
+
+        let html = '<table class="history-table"><thead><tr><th>ID</th><th>From</th><th>To</th><th>Amount</th><th>Type</th><th>Date</th></tr></thead><tbody>';
+        data.transactions.forEach(t => {
+            const isSent = t.from_account === currentAccount;
+            const badge = isSent
+                ? '<span class="badge badge-sent">Sent</span>'
+                : '<span class="badge badge-received">Received</span>';
+            html += `<tr>
+                <td>#${t.id}</td>
+                <td>${t.from_account}</td>
+                <td>${t.to_account}</td>
+                <td>$${t.amount.toFixed(2)}</td>
+                <td>${badge}</td>
+                <td>${t.timestamp}</td>
+            </tr>`;
+        });
+        html += '</tbody></table>';
+        container.innerHTML = html;
+    }
+
+    /* ====== TRANSFER ====== */
+    async function handleTransfer(e) {
+        e.preventDefault();
+        const to_account = document.getElementById('transfer-to').value.trim();
+        const amount = parseFloat(document.getElementById('transfer-amount').value);
+
+        const data = await api('/api/transfer', {
+            method: 'POST',
+            body: JSON.stringify({ to_account, amount })
+        });
+
+        if (data.success) {
+            showMsg('dash-msg', '✅ ' + data.message, 'success');
+            document.getElementById('transfer-to').value = '';
+            document.getElementById('transfer-amount').value = '';
+            refreshBalance();
+            refreshHistory();
+        } else {
+            showMsg('dash-msg', '❌ ' + data.message, 'error');
+        }
+        return false;
+    }
+
+    /* ====== PASSWORD MODAL ====== */
+    function openPasswordModal() {
+        document.getElementById('password-modal').classList.add('active');
+    }
+    function closePasswordModal() {
+        document.getElementById('password-modal').classList.remove('active');
+        document.getElementById('old-password').value = '';
+        document.getElementById('new-password').value = '';
+        document.getElementById('password-msg').className = 'msg';
+    }
+    async function handleChangePassword(e) {
+        e.preventDefault();
+        const old_password = document.getElementById('old-password').value;
+        const new_password = document.getElementById('new-password').value;
+
+        const data = await api('/api/change-password', {
+            method: 'POST',
+            body: JSON.stringify({ old_password, new_password })
+        });
+
+        if (data.success) {
+            showMsg('password-msg', '✅ Password changed!', 'success');
+            setTimeout(closePasswordModal, 1500);
+        } else {
+            showMsg('password-msg', data.message, 'error');
+        }
+        return false;
+    }
+</script>
+</body>
+</html>

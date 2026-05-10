@@ -3,7 +3,9 @@ name = "simple-banking-system"
 version = "1.0.0"
 description = "A Simple Banking System for Software Quality Assurance testing"
 requires-python = ">=3.10"
-dependencies = []
+dependencies = [
+    "flask>=3.0",
+]
 
 [tool.uv]
 dev-dependencies = [
